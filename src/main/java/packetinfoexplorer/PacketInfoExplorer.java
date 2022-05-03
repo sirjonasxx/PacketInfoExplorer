@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @ExtensionInfo(
         Title = "Packet Info",
         Description = "Packet info explorer",
-        Version = "0.1",
+        Version = "0.1.1",
         Author = "sirjonasxx"
 )
 public class PacketInfoExplorer extends ExtensionForm {
