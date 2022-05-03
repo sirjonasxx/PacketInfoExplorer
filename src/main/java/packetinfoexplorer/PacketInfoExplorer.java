@@ -34,6 +34,8 @@ public class PacketInfoExplorer extends ExtensionForm {
 
     private Map<String, CheckBox> chk_sources = new HashMap<>();
 
+    private final Object lock = new Object();
+
     private List<PacketInfo> packetInfoList = new ArrayList<>();
 
     private TableView<PacketInfo> tableView;
@@ -45,6 +47,7 @@ public class PacketInfoExplorer extends ExtensionForm {
         tableView = new TableView<>();
         tableView.setTableMenuButtonVisible(true);
         tableView.setStyle("-fx-focus-color: white;");
+//        tableView.setStyle("-fx-background-radius: 0 0 10 10");
 
         tableView.focusedProperty().addListener(observable -> {
             if (tableView.isFocused()) {
@@ -99,19 +102,23 @@ public class PacketInfoExplorer extends ExtensionForm {
     }
 
     private void init(PacketInfoManager packetInfoManager) {
-        packetInfoList = packetInfoManager.getPacketInfoList();
-        packetInfoList.sort(Comparator.comparingInt(PacketInfo::getHeaderId));
+        synchronized (lock) {
+            packetInfoList = packetInfoManager.getPacketInfoList();
+            packetInfoList.sort(Comparator.comparingInt(PacketInfo::getHeaderId));
+        }
 
         Platform.runLater(() -> {
             source_grid.getChildren().clear();
             chk_sources.clear();
-            for (PacketInfo packetInfo : packetInfoList) {
-                if (!chk_sources.containsKey(packetInfo.getSource())) {
-                    CheckBox checkBox = new CheckBox(packetInfo.getSource());
-                    checkBox.setSelected(true);
-                    checkBox.selectedProperty().addListener(observable -> updateTableValues());
-                    source_grid.add(checkBox, 0, chk_sources.size());
-                    chk_sources.put(packetInfo.getSource(), checkBox);
+            synchronized (lock) {
+                for (PacketInfo packetInfo : packetInfoList) {
+                    if (!chk_sources.containsKey(packetInfo.getSource())) {
+                        CheckBox checkBox = new CheckBox(packetInfo.getSource());
+                        checkBox.setSelected(true);
+                        checkBox.selectedProperty().addListener(observable -> updateTableValues());
+                        source_grid.add(checkBox, 0, chk_sources.size());
+                        chk_sources.put(packetInfo.getSource(), checkBox);
+                    }
                 }
             }
 
